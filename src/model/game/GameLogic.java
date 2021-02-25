@@ -52,7 +52,69 @@ public class GameLogic
     {
         if (game.getLastMove().equals(move))
         {
-           // TODO
+            Figure movingFigure = move.getFigure();
+            Board board = game.getBoard();
+
+            // put figure back to original location
+            movingFigure.setPosition(move.getOldPositionOfFigure());
+            move.getTargetOfFigure().setState(Tile.State.EMPTY);
+            switch (movingFigure.getColor())
+            {
+                case RED    -> move.getOldPositionOfFigure().setState(Tile.State.OCCUPIED_RED);
+                case GREEN  -> move.getOldPositionOfFigure().setState(Tile.State.OCCUPIED_GREEN);
+                case YELLOW -> move.getOldPositionOfFigure().setState(Tile.State.OCCUPIED_YELLOW);
+                case BLUE   -> move.getOldPositionOfFigure().setState(Tile.State.OCCUPIED_BLUE);
+                default     -> System.out.println("Couldn't set state of old tile cuz of unknown figure color!");
+            }
+
+            // undo block move if there was any
+            if (move.getTargetOfBlock() != null)
+            {
+                move.getTargetOfBlock().setState(Tile.State.EMPTY);
+                move.getTargetOfFigure().setState(Tile.State.BLOCKED);
+            }
+
+            // undo beating of figure if there was any
+            if (move.getBeatenColor() != null)
+            {
+                // target tile of moving figure to occupied by beaten color
+                switch (move.getBeatenColor())
+                {
+                    case RED    -> move.getTargetOfFigure().setState(Tile.State.OCCUPIED_RED);
+                    case GREEN  -> move.getTargetOfFigure().setState(Tile.State.OCCUPIED_GREEN);
+                    case YELLOW -> move.getTargetOfFigure().setState(Tile.State.OCCUPIED_YELLOW);
+                    case BLUE   -> move.getTargetOfFigure().setState(Tile.State.OCCUPIED_BLUE);
+                    default     -> System.out.println("Couldn't reset state of target tile cuz of unknown figure color!");
+                }
+
+                // get tile of beaten color agents base
+                int baseTileID = -1;
+                int basePointer = Board.BASE_POINTERS[move.getBeatenColor().ordinal()];
+                for (int id = basePointer; id < basePointer + Board.BASE_SIZE; id++)
+                {
+                    if (board.getTileById(id).getState() != Tile.State.EMPTY)
+                    {
+                        baseTileID = id;
+                        board.getTileById(id).setState(Tile.State.EMPTY);
+                        break;
+                    }
+                }
+                if (baseTileID == -1)
+                {
+                    System.err.println("Tried to get figure from base but it was empty");
+                    System.exit(-1);
+                }
+
+                // put figure from base tile with id=baseTileID to moving figures target tile
+                for (Figure figure : game.getAgent(move.getBeatenColor().ordinal()).getFigures())
+                {
+                    if (figure.getPosition().getId() == baseTileID)
+                    {
+                        figure.setPosition(move.getTargetOfFigure());
+                        break;
+                    }
+                }
+            }
         }
         else
         {

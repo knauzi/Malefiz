@@ -63,6 +63,11 @@ public class Move
         return diceResult;
     }
 
+    public Tile getOldPositionOfFigure()
+    {
+        return oldPositionOfFigure;
+    }
+
     @Override
     public boolean equals(Object o)
     {

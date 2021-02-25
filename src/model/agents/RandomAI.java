@@ -1,5 +1,6 @@
 package model.agents;
 
+import model.game.Board;
 import model.game.Game;
 import model.game.GameLogic;
 import model.game.Move;
@@ -10,9 +11,9 @@ import java.util.Random;
 
 public class RandomAI extends ArtificialAgent
 {
-    public RandomAI(Color color)
+    public RandomAI(Color color, Board board)
     {
-        super(color);
+        super(color, board);
     }
 
     @Override

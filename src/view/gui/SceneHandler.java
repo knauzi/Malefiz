@@ -7,8 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class SceneHandler
@@ -78,12 +78,46 @@ public class SceneHandler
 
     public void buildGameScene()
     {
-        HBox hb = new HBox();
-        hb.setAlignment(Pos.CENTER);
-        Label label = new Label("Game Scene");
-        hb.getChildren().addAll(label);
+        /* main container */
 
-        gameScene = new Scene(hb, 800, 600);
+        HBox hb = new HBox();
+        hb.setAlignment(Pos.CENTER_LEFT);
+
+        /* game board */
+
+        Pane gameBoard = new Pane();
+        gameBoard.setMinSize(600, 600);
+        gameBoard.setStyle("-fx-padding: 2;" +
+                "-fx-border-style: solid inside;" +
+                "-fx-border-width: 4;" +
+                "-fx-border-color: black;");
+
+        Image imgBackground = new Image("file:resources/images/board.jpg");
+        BackgroundImage backgroundImage = new BackgroundImage(
+                imgBackground,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.DEFAULT,
+                new BackgroundSize(1.0, 1.0, true, true, false, false));
+        Background background = new Background(backgroundImage);
+        gameBoard.setBackground(background);
+
+        /* side bar */
+
+        VBox sideBar = new VBox();
+        sideBar.setMinSize(150, 600);
+        sideBar.setAlignment(Pos.CENTER);
+        sideBar.setStyle("-fx-padding: 2;" +
+                "-fx-border-style: solid inside;" +
+                "-fx-border-width: 4 4 4 0;" +
+                "-fx-border-color: black;" +
+                "-fx-background-color: #A9A9A9;");
+
+        Label label = new Label("Side bar");
+        sideBar.getChildren().addAll(label);
+
+        hb.getChildren().addAll(gameBoard, sideBar);
+        gameScene = new Scene(hb, 750, 600);
     }
 
     private void startGame(Event e)
@@ -94,6 +128,7 @@ public class SceneHandler
 
         // change to game scene
         stage.setScene(gameScene);
+        stage.centerOnScreen();
     }
 
     public Scene getStartingScene()

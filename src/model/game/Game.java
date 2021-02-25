@@ -1,14 +1,10 @@
 package model.game;
 
 import model.agents.ArtificialAgent;
-import model.utils.Color;
 import model.agents.Agent;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Random;
 
 public class Game
