@@ -19,24 +19,29 @@ public class Game
 
     /* all data corresponding to current game state */
     private final Board board;        // instance of board (official board; ai player make copies)
-    private final Agent[] agents;     // array containing all agents
-    private final int numAgents;      // number of active agents
+    private Agent[] agents;     // array containing all agents
+    private int numAgents;      // number of active agents
     private Phase phase;              // phase in which the game is currently
     private int activeAgent;          // index of currently active agent
     private Move lastMove;            // last move for resetting
+    private int diceResult;
 
     /* observer pattern */
     private final PropertyChangeSupport pcs;
 
     /** initialisation of the game */
 
-    public Game(Agent[] agents)
+    public Game()
     {
         board = new Board();
-        this.agents = agents;
         this.phase = Phase.WAITING_FOR_ROLL;
         randomGenerator = new Random();
         pcs = new PropertyChangeSupport(this);
+    }
+
+    public void setAgents(Agent[] agents)
+    {
+        this.agents = agents;
         numAgents = getNumAgents(agents);
     }
 
@@ -60,25 +65,19 @@ public class Game
         return numAgents;
     }
 
-    /* has to be called first !! ...chooses random agent to start */
+    /* has to be called first after setAgents !! ...chooses random agent to start */
     public void startGame()
     {
+        if (agents == null)
+        {
+            System.err.println("No agents initialized! -> Failed to start game!");
+            System.exit(-1);
+        }
         do
         {
             activeAgent = randomGenerator.nextInt(agents.length);
         } while (agents[activeAgent] == null);
 
-        requestMoveFromActiveAgent();
-    }
-
-    public void advanceToNextAgent()
-    {
-        do
-        {
-            activeAgent = activeAgent++ % agents.length;
-        } while (agents[activeAgent] == null);
-
-        setPhase(Phase.WAITING_FOR_ROLL);
         requestMoveFromActiveAgent();
     }
 
@@ -91,16 +90,16 @@ public class Game
 
     /** game related methods */
 
-    public int rollDice()
+    public void rollDice()
     {
-        return randomGenerator.nextInt(6) + 1;
+        diceResult = randomGenerator.nextInt(6) + 1;
     }
 
     private void requestMoveFromActiveAgent()
     {
         if (agents[activeAgent] instanceof ArtificialAgent)
         {
-            int diceResult = rollDice();
+            rollDice();
             Move nextMove = ((ArtificialAgent) agents[activeAgent]).getNextMove(this, diceResult);
 
             if (!GameLogic.isValidMove(this, nextMove))
@@ -115,9 +114,36 @@ public class Game
             }
 
             update(nextMove);
+
+            System.out.println();
+            System.out.println(board);
+            System.out.println("Dice: " + diceResult);
+            System.out.println("Agent: " + activeAgent);
+
             setLastMove(nextMove);
             advanceToNextAgent();
         }
+    }
+
+    public void advanceToNextAgent()
+    {
+        if (isGameOver())
+        {
+            System.out.println("Agent " + activeAgent + " has won the game!");
+            return;
+        }
+        do
+        {
+            activeAgent = ++activeAgent % agents.length;
+        } while (agents[activeAgent] == null);
+
+        setPhase(Phase.WAITING_FOR_ROLL);
+        requestMoveFromActiveAgent();
+    }
+
+    public boolean isGameOver()
+    {
+        return board.getTileById(Board.GOAL_TILE_ID).getState() != Tile.State.EMPTY;
     }
 
     public void update(Move move)
@@ -145,6 +171,11 @@ public class Game
         this.phase = phase;
     }
 
+    public Phase getPhase()
+    {
+        return phase;
+    }
+
     public Board getBoard()
     {
         return board;
@@ -168,5 +199,15 @@ public class Game
     public Move getLastMove()
     {
         return lastMove;
+    }
+
+    public int getActiveAgent()
+    {
+        return activeAgent;
+    }
+
+    public int getDiceResult()
+    {
+        return diceResult;
     }
 }

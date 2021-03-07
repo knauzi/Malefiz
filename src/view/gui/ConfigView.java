@@ -1,5 +1,7 @@
 package view.gui;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventType;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -21,7 +23,7 @@ public class ConfigView implements View
     private final Stage stage;
 
     /* config selections (data) */
-    private static final int NUM_AGENTS = 4;
+    public static final int NUM_AGENTS = 4;
     private final ArrayList<TextField> names = new ArrayList<>(NUM_AGENTS);
     private final ArrayList<ChoiceBox<String>> types = new ArrayList<>(NUM_AGENTS);
     private Button startButton;
@@ -67,7 +69,7 @@ public class ConfigView implements View
 
         // start button
         startButton = new Button("Starte Spiel");
-        startButton.setOnAction(controller);
+        startButton.addEventHandler(ActionEvent.ACTION, controller);
 
         // overall layout of the scene
         VBox layout = new VBox();
@@ -81,7 +83,7 @@ public class ConfigView implements View
     }
 
     @Override
-    public void update()
+    public void update(Controller controller)
     {
         // TODO
     }

@@ -16,7 +16,7 @@ public class Board
     public static final int BASE_SIZE = 5;
 
     /* all tiles with id less than 16 are not blockable */
-    public static final int FIRST_BLOCKABLE_TILE_ID = 16;
+    public static final int FIRST_BLOCKABLE_TILE_ID = 17;
 
     /* id of goal tile */
     public static final int GOAL_TILE_ID = 111;

@@ -214,6 +214,23 @@ public class GameLogic
         return possibleTargetTiles;
     }
 
+    /* get all possible tiles where to move block at given tile */
+    public static ArrayList<Tile> getPossibleTargetTilesOfBlock(Board board, Tile blockTile)
+    {
+        ArrayList<Tile> possibleTargetTilesofBlock = new ArrayList<>();
+
+        Tile[] tiles = board.getTiles();
+        for (int i = Board.FIRST_BLOCKABLE_TILE_ID; i < Board.GOAL_TILE_ID; i++)
+        {
+            if (tiles[i].getState() == Tile.State.EMPTY)
+            {
+                possibleTargetTilesofBlock.add(tiles[i]);
+            }
+        }
+
+        return possibleTargetTilesofBlock;
+    }
+
     /* get all possible moves of the figure with given dice result (steps) */
     public static ArrayList<Move> getPossibleMovesOfFigure(Board board, Figure figure, int diceResult)
     {
