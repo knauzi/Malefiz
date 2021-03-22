@@ -1,9 +1,10 @@
 package controller.gui;
 
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
@@ -11,6 +12,7 @@ import javafx.stage.Stage;
 import model.agents.Agent;
 import model.agents.Human;
 import model.agents.RandomAI;
+import model.agents.SimpleAI;
 import model.game.*;
 import model.utils.Color;
 import view.gui.ConfigView;
@@ -19,7 +21,6 @@ import view.gui.GameBoard;
 import view.gui.GameView;
 import view.gui.utils.Highlight;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class Controller implements EventHandler<Event>
@@ -47,13 +48,18 @@ public class Controller implements EventHandler<Event>
     @Override
     public void handle(Event event)
     {
+        if(game != null && game.getPhase() == Game.Phase.GAME_OVER)
+        {
+            event.consume();
+            return;
+        }
         if (event.getSource() instanceof Button)
         {
             if ((((Button) event.getSource()).getText()).equals("Starte Spiel"))
             {
                 startGame();
             }
-            else if ((((Button) event.getSource()).getText()).equals("Würfeln"))
+            else if ((((Button) event.getSource()).getId()).equals("roll"))
             {
                 if (game.getPhase() == Game.Phase.WAITING_FOR_ROLL)
                 {
@@ -68,7 +74,7 @@ public class Controller implements EventHandler<Event>
                 event.getEventType().equals(MouseEvent.MOUSE_CLICKED) &&
                 game.getPhase() == Game.Phase.TARGET_SELECTION)
         {
-            System.out.println("Clicked Target");
+            // System.out.println("Clicked Target");
             Highlight highlight = (Highlight) event.getSource();
             if (highlight.getTile().getState() != Tile.State.BLOCKED)
             {
@@ -91,6 +97,16 @@ public class Controller implements EventHandler<Event>
                 setSelectedBlockTile(null);
                 game.advanceToNextAgent();
                 gameView.getGameBoard().redraw(game, this);
+
+                if(game.isGameOver())
+                {
+                    game.setPhase(Game.Phase.GAME_OVER);
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setContentText("Spieler " + game.getActiveAgent() + " hat gewonnen!\n\nSpiel neustarten?");
+                    alert.showAndWait()
+                            .filter(response -> response == ButtonType.OK)
+                            .ifPresent(response -> game.resetGame());
+                }
             }
             else // block at target tile
             {
@@ -106,7 +122,7 @@ public class Controller implements EventHandler<Event>
                 event.getEventType().equals(MouseEvent.MOUSE_CLICKED) &&
                 game.getPhase() == Game.Phase.MOVING_BLOCK)
         {
-            System.out.println("Clicked Block Target");
+            // System.out.println("Clicked Block Target");
             Highlight highlight = (Highlight) event.getSource();
             setSelectedBlockTile(highlight.getTile());
             Move move = new Move(selectedFigure, selectedTile, game.getDiceResult(), selectedBlockTile);
@@ -123,7 +139,7 @@ public class Controller implements EventHandler<Event>
                  event.getEventType().equals(MouseEvent.MOUSE_CLICKED) &&
                  (game.getPhase() == Game.Phase.FIGURE_SELECTION || game.getPhase() == Game.Phase.TARGET_SELECTION))
         {
-            System.out.println("Clicked Figure");
+            // System.out.println("Clicked Figure");
             FigureGUI figureGUI = (FigureGUI) event.getSource();
             if (figureGUI.getFigure().getColor().ordinal() == game.getActiveAgent())
             {
@@ -140,7 +156,7 @@ public class Controller implements EventHandler<Event>
                  event.getSource() instanceof GameBoard &&
                  !(game.getPhase() == Game.Phase.WAITING_FOR_ROLL))
         {
-            System.out.println("Clicked");
+            // System.out.println("Clicked");
             gameView.getGameBoard().setHighlightTiles(null);
             setSelectedFigure(null);
             setSelectedTile(null);
@@ -149,8 +165,6 @@ public class Controller implements EventHandler<Event>
             gameView.getGameBoard().redraw(game, this);
             event.consume();
         }
-
-        // TODO handle all other events
     }
 
     private void registerGameView(GameView gameView)
@@ -166,9 +180,10 @@ public class Controller implements EventHandler<Event>
         {
             switch (types.get(i).getValue())
             {
-                case "Mensch" -> agents[i] = new Human(Color.getColorById(i), game.getBoard());
-                case "KI"     -> agents[i] = new RandomAI(Color.getColorById(i), game.getBoard());
-                default       -> agents[i] = null;
+                case "Mensch"       -> agents[i] = new Human(Color.getColorById(i), game.getBoard());
+                case "Zufall-KI"    -> agents[i] = new RandomAI(Color.getColorById(i), game.getBoard());
+                case "Einfache-KI"  -> agents[i] = new SimpleAI(Color.getColorById(i), game.getBoard());
+                default             -> agents[i] = null;
             }
         }
 
@@ -181,16 +196,17 @@ public class Controller implements EventHandler<Event>
 
         game = new Game();
 
-        // retrieve selection from config view and init game
         Agent[] agents = createAgentsFromConfigData();
         game.setAgents(agents);
-        game.startGame();
 
         gameView = new GameView(game, this);
+        game.addObserver(gameView);
 
-        // change to game scene
         stage.setScene(gameView.getScene());
         stage.centerOnScreen();
+        stage.show();
+
+        game.start();
     }
 
     public Stage getStage()

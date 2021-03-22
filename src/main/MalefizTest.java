@@ -24,6 +24,6 @@ public class MalefizTest
         System.out.println(game.getBoard());
 
         game.setAgents(agents);
-        game.startGame();
+        game.start();
     }
 }

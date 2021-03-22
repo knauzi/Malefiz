@@ -1,6 +1,7 @@
 package view.gui;
 
 import controller.gui.Controller;
+import javafx.application.Platform;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -18,8 +19,7 @@ import view.gui.utils.PositionMap;
 
 import java.util.ArrayList;
 
-public class GameBoard extends Pane
-{
+public class GameBoard extends Pane {
     private final PositionMap positionMap;
 
     public static final int FIGURE_SIZE = 16;
@@ -27,15 +27,14 @@ public class GameBoard extends Pane
 
     private ArrayList<Tile> highlightTiles;
 
-    public GameBoard(Game game, Controller controller)
-    {
+    public GameBoard(Game game, Controller controller) {
         super();
         positionMap = new PositionMap(game.getBoard());
+        initGameBoard();
         redraw(game, controller);
     }
 
-    private void initGameBoard()
-    {
+    private void initGameBoard() {
         setMinSize(600, 600);
         setStyle("-fx-padding: 2;" +
                 "-fx-border-style: solid inside;" +
@@ -53,35 +52,27 @@ public class GameBoard extends Pane
         setBackground(background);
     }
 
-    private void drawComponents(Game game, Controller controller)
-    {
+    private void drawComponents(Game game, Controller controller) {
         // figures
-        for (Agent agent : game.getAgents())
-        {
-            if(agent != null)
-            {
-                for (Figure figure : agent.getFigures())
-                {
+        for (Agent agent : game.getAgents()) {
+            if (agent != null) {
+                for (Figure figure : agent.getFigures()) {
                     Point position = positionMap.getPoint(figure.getPosition().getId());
                     FigureGUI figureGUI = new FigureGUI(figure, position.getX() - FIGURE_SIZE / 2,
-                                                   position.getY() - FIGURE_SIZE / 2, FIGURE_SIZE, FIGURE_SIZE);
+                            position.getY() - FIGURE_SIZE / 2, FIGURE_SIZE, FIGURE_SIZE);
                     figureGUI.setStrokeWidth(2);
 
-                    switch (figure.getColor())
-                    {
-                        case RED    -> figureGUI.setFill(Color.RED);
-                        case GREEN  -> figureGUI.setFill(Color.GREEN);
+                    switch (figure.getColor()) {
+                        case RED -> figureGUI.setFill(Color.RED);
+                        case GREEN -> figureGUI.setFill(Color.GREEN);
                         case YELLOW -> figureGUI.setFill(Color.YELLOW);
-                        case BLUE   -> figureGUI.setFill(Color.BLUE);
-                        default     -> figureGUI.setFill(Color.WHITE);
+                        case BLUE -> figureGUI.setFill(Color.BLUE);
+                        default -> figureGUI.setFill(Color.WHITE);
                     }
 
-                    if (agent.getColor().ordinal() == game.getActiveAgent())
-                    {
+                    if (agent.getColor().ordinal() == game.getActiveAgent()) {
                         figureGUI.setStroke(Color.ORANGE);
-                    }
-                    else
-                    {
+                    } else {
                         figureGUI.setStroke(Color.WHITE);
                     }
 
@@ -92,13 +83,18 @@ public class GameBoard extends Pane
         }
 
         // blocks
-        // TODO
+        for (Tile tile : game.getBoard().getTiles()) {
+            if (tile.getState() == Tile.State.BLOCKED) {
+                Point position = positionMap.getPoint(tile.getId());
+                Circle block = new Circle(position.getX(), position.getY(), 12);
+                block.setFill(Color.GRAY);
+                getChildren().add(block);
+            }
+        }
 
         // highlighted tiles
-        if (highlightTiles != null)
-        {
-            for (Tile tile : highlightTiles)
-            {
+        if (highlightTiles != null) {
+            for (Tile tile : highlightTiles) {
                 Point position = positionMap.getPoint(tile.getId());
 
                 Highlight highlight = new Highlight(tile, position.getX(), position.getY(), HIGHLIGHT_SIZE);
@@ -113,15 +109,13 @@ public class GameBoard extends Pane
 
     }
 
-    public void setHighlightTiles(ArrayList<Tile> highlightTiles)
-    {
+    public void setHighlightTiles(ArrayList<Tile> highlightTiles) {
         this.highlightTiles = highlightTiles;
     }
 
-    public void redraw(Game game, Controller controller)
-    {
+    public void redraw(Game game, Controller controller) {
         getChildren().clear();
-        initGameBoard();
+        // initGameBoard();
         drawComponents(game, controller);
     }
 }

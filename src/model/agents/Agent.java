@@ -8,12 +8,15 @@ public abstract class Agent
 {
     private final Color color;
 
-    private final Figure[] figures;
+    private Figure[] figures;
 
     public Agent(Color color, Board board)
     {
         this.color = color;
-        // init figures (position in base)
+        initFigures(board);
+    }
+
+    public void initFigures(Board board) {
         figures = new Figure[5];
         figures[0] = new Figure(color, board.getTileById(Board.BASE_POINTERS[color.ordinal()]));
         figures[1] = new Figure(color, board.getTileById(Board.BASE_POINTERS[color.ordinal()] + 1));

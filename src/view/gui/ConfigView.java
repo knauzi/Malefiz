@@ -38,7 +38,7 @@ public class ConfigView implements View
     public void buildConfigView(Controller controller)
     {
         final HBox[] hbs = new HBox[NUM_AGENTS];
-        final String[] allTypes = new String[]{ "-", "Mensch", "KI" };
+        final String[] allTypes = new String[]{ "-", "Mensch", "Zufall-KI", "Einfache-KI" };
 
         // column labels
         HBox topRow = new HBox();
@@ -83,7 +83,7 @@ public class ConfigView implements View
     }
 
     @Override
-    public void update(Controller controller)
+    public void update()
     {
         // TODO
     }

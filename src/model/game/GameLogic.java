@@ -45,6 +45,7 @@ public class GameLogic
             default     -> System.out.println("Couldn't set state of target tile cuz of unknown figure color!");
         }
 
+        game.setLastMove(move);
         game.setPhase(Game.Phase.WAITING_FOR_ROLL);
     }
 
@@ -119,6 +120,7 @@ public class GameLogic
         else
         {
             System.err.println("Last move made is not equal to the move which is supposed to be undone!");
+            System.exit(-1);
         }
     }
 

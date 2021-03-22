@@ -4,5 +4,5 @@ import controller.gui.Controller;
 
 public interface View
 {
-    public void update(Controller controller);
+    public void update();
 }
