@@ -1,6 +1,5 @@
 package model.game;
 
-import javafx.application.Platform;
 import model.agents.ArtificialAgent;
 import model.agents.Agent;
 
@@ -77,7 +76,7 @@ public class Game extends Thread{
         requestMoveFromActiveAgent();
     }
 
-    private synchronized void initActiveAgent() {
+    public synchronized void initActiveAgent() {
         do {
             activeAgent = randomGenerator.nextInt(agents.length);
         } while (agents[activeAgent] == null);
@@ -125,7 +124,7 @@ public class Game extends Thread{
     }
 
     public synchronized void advanceToNextAgent() {
-        if (isGameOver()) {
+        if (isOver()) {
             return;
         }
         do {
@@ -142,7 +141,16 @@ public class Game extends Thread{
         requestMoveFromActiveAgent();
     }
 
-    public synchronized boolean isGameOver() {
+    public synchronized void advanceToNextAgentLearning() {
+        if (isOver()) {
+            return;
+        }
+        do {
+            activeAgent = ++activeAgent % agents.length;
+        } while (agents[activeAgent] == null);
+    }
+
+    public synchronized boolean isOver() {
         return board.getTileById(Board.GOAL_TILE_ID).getState() != Tile.State.EMPTY;
     }
 
@@ -152,7 +160,7 @@ public class Game extends Thread{
         }
 
         GameLogic.makeMoveOnGame(this, move);
-        if (isGameOver()) {
+        if (isOver()) {
             // System.out.println("Agent " + activeAgent + " has won the game!");
             setPhase(Phase.GAME_OVER);
             synchronized (this) {

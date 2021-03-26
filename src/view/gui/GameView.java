@@ -3,7 +3,6 @@ package view.gui;
 import controller.gui.Controller;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -14,9 +13,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.game.Game;
@@ -129,7 +125,7 @@ public class GameView implements PropertyChangeListener, View
                 this.game = (Game) event.getNewValue();
                 gameBoard.redraw(game, controller);
                 setDiceResult(game.getDiceResult());
-                if(game.isGameOver())
+                if(game.isOver())
                 {
                     game.setPhase(Game.Phase.GAME_OVER);
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);

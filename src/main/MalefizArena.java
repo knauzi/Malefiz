@@ -1,10 +1,11 @@
 package main;
 
-import model.agents.Agent;
-import model.agents.RandomAI;
-import model.agents.SimpleAI;
+import model.agents.*;
 import model.game.Game;
 import model.utils.Color;
+
+import java.time.Duration;
+import java.time.Instant;
 
 public class MalefizArena{
 
@@ -31,14 +32,20 @@ public class MalefizArena{
     }
 
     public void run() {
+        Instant startTime, endTime;
+        long timeElapsed;
+
         for(int i = 0; i < NUM_PLAYS; i++){
+
+            startTime = Instant.now();
             Game game = new Game();
 
             Agent[] agents = new Agent[4];
-            agents[0] = new RandomAI(Color.RED, game.getBoard());
+            NeuralNetwork nn = new NeuralNetwork();
+            agents[0] = new TDLAgent(Color.RED, game.getBoard(), nn);//new RandomAI(Color.RED, game.getBoard());
             agents[1] = null; //new SimpleAI(Color.GREEN, game.getBoard());
-            agents[2] = new RandomAI(Color.YELLOW, game.getBoard());
-            agents[3] = new RandomAI(Color.BLUE, game.getBoard());
+            agents[2] = null; //new RandomAI(Color.YELLOW, game.getBoard());
+            agents[3] = new TDLAgent(Color.RED, game.getBoard(), nn);// new RandomAI(Color.BLUE, game.getBoard());
             game.setAgents(agents);
 
             game.start();
@@ -47,6 +54,9 @@ public class MalefizArena{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            endTime = Instant.now();
+            timeElapsed = Duration.between(startTime, endTime).toSeconds();
+            System.out.println("Game over after " + timeElapsed + " s");
 
             for(Agent agent : agents){
                 if(agent != null){

@@ -9,10 +9,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
-import model.agents.Agent;
-import model.agents.Human;
-import model.agents.RandomAI;
-import model.agents.SimpleAI;
+import model.agents.*;
 import model.game.*;
 import model.utils.Color;
 import view.gui.ConfigView;
@@ -98,7 +95,7 @@ public class Controller implements EventHandler<Event>
                 game.advanceToNextAgent();
                 gameView.getGameBoard().redraw(game, this);
 
-                if(game.isGameOver())
+                if(game.isOver())
                 {
                     game.setPhase(Game.Phase.GAME_OVER);
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -183,6 +180,7 @@ public class Controller implements EventHandler<Event>
                 case "Mensch"       -> agents[i] = new Human(Color.getColorById(i), game.getBoard());
                 case "Zufall-KI"    -> agents[i] = new RandomAI(Color.getColorById(i), game.getBoard());
                 case "Einfache-KI"  -> agents[i] = new SimpleAI(Color.getColorById(i), game.getBoard());
+                case "TDL-KI"       -> agents[i] = new TDLAgent(Color.getColorById(i), game.getBoard(), new NeuralNetwork());
                 default             -> agents[i] = null;
             }
         }
