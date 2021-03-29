@@ -133,12 +133,12 @@ public class Game extends Thread{
 
         setPhase(Phase.WAITING_FOR_ROLL);
 
-//        new Thread(() -> {
-//            try  { Thread.sleep( 1000 ); }
-//            catch (InterruptedException ie)  {}
-//            requestMoveFromActiveAgent();
-//        }).start();
-        requestMoveFromActiveAgent();
+        new Thread(() -> {
+            try  { Thread.sleep( 1000 ); }
+            catch (InterruptedException ie)  {}
+            requestMoveFromActiveAgent();
+        }).start();
+//        requestMoveFromActiveAgent();
     }
 
     public synchronized void advanceToNextAgentLearning() {

@@ -85,10 +85,7 @@ public class SimpleAI extends ArtificialAgent{
         }
 
         // 2. move block if possible
-        Optional<Move> moveBlockMove = relevantMoves.stream()
-                                            .filter((Move move) -> move.getTargetOfBlock() != null)
-                                            .filter((Move move) -> doesNotBlockOwnFigures(game, move))
-                                            .findFirst();
+        Optional<Move> moveBlockMove = getMoveBlockMove(game, relevantMoves);
         if(moveBlockMove.isPresent()){
             return moveBlockMove.get();
         }
@@ -98,14 +95,35 @@ public class SimpleAI extends ArtificialAgent{
         return relevantMoves.get(random.nextInt(relevantMoves.size()));
     }
 
-    /* do not put block on shortest path from */
-    private boolean doesNotBlockOwnFigures(Game game, Move move){
-//        GameLogic.makeMoveOnGame(game, move);
-//        for(Figure figure : getFigures()){
-//            totalDistOfFiguresToGoal += figure.getPosition().getDist();
-//        }
-//        GameLogic.undoMoveOnGame(game, move);
-        return true;
+    private Optional<Move> getMoveBlockMove(Game game, List<Move> relevantMoves) {
+
+        // if move block available
+
+        List<Move> moveBlockMoves = relevantMoves.stream()
+                .filter((Move move) -> move.getTargetOfBlock() != null)
+                .collect(Collectors.toList());
+
+        if (!moveBlockMoves.isEmpty()) {
+
+            int distOfFirstFigure = Integer.MAX_VALUE;
+            for (Figure figure : getFigures()) {
+                int distOfFigure = figure.getPosition().getDist();
+                if (distOfFigure < distOfFirstFigure) {
+                    distOfFirstFigure = distOfFigure;
+                }
+            }
+
+            int finalDistOfFirstFigure = distOfFirstFigure;
+            List<Move> moves = moveBlockMoves.stream()
+                    .filter((Move move) -> move.getTargetOfBlock().getDist() >= finalDistOfFirstFigure)
+                    .collect(Collectors.toList());
+            if (!moves.isEmpty()) {
+                int randomMoveID = (new Random()).nextInt(moves.size());
+                return Optional.of(moves.get(randomMoveID));
+            }
+        }
+
+        return Optional.empty();
     }
 
     public int getAverageNumberOfMovesPerTurn(){

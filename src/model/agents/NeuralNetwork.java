@@ -1,37 +1,40 @@
 package model.agents;
 
+import com.google.gson.Gson;
 import model.game.*;
 import model.utils.Color;
 import org.nd4j.linalg.activations.impl.ActivationSigmoid;
 import org.nd4j.linalg.activations.impl.ActivationSoftmax;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
-import java.io.File;
+import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Neural Network with one hidden layer
  */
-public class NeuralNetwork {
+public class NeuralNetwork extends BaseNetwork{
 
     /** hyper parameters */
     private final double lambda = 0.7; // td lambda parameter
-    private final double alpha = 0.1;  // learning rate alpha
+    private final double alpha = 0.2;  // learning rate alpha
 
     /** parameters of network */
-    private INDArray w2;
+    public INDArray w2;
     private INDArray w3;
     private INDArray b2;
     private INDArray b3;
 
     /** dimensions of layers */
-    private final int inputSize = 132;
-    private final int hiddenSize = 20;
+    private final int inputSize = 566;
+    private final int hiddenSize = 80;
     private final int outputSize = 4;
 
     /** activation functions */
@@ -47,11 +50,49 @@ public class NeuralNetwork {
     }
 
     /** load parameters from files */
-    public NeuralNetwork(File w2File, File w3File, File b2File, File b3File) {
-        double[][] javaW2 = w2.toDoubleMatrix();
-        double[][] javaW3 = w3.toDoubleMatrix();
-        double[] javab2 = b2.toDoubleVector();
-        double[] javab3 = b2.toDoubleVector();
+    public NeuralNetwork(String filePath) {
+        Gson gson = new Gson();
+        Map<String, String> jsonData;
+        try {
+            jsonData = gson.fromJson(new FileReader(filePath), HashMap.class);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        float[][] javaW2 = gson.fromJson(jsonData.get("w2"), float[][].class);
+        float[][] javaW3 = gson.fromJson(jsonData.get("w3"), float[][].class);
+        float[] javab2 = gson.fromJson(jsonData.get("b2"), float[].class);
+        float[] javab3 = gson.fromJson(jsonData.get("b3"), float[].class);
+
+        w2 = Nd4j.create(javaW2);
+        w3 = Nd4j.create(javaW3);
+        b2 = Nd4j.create(javab2);
+        b3 = Nd4j.create(javab3);
+    }
+
+    public void save(String filePath) throws IOException {
+        float[][] javaW2 = w2.toFloatMatrix();
+        float[][] javaW3 = w3.toFloatMatrix();
+        float[] javab2 = b2.toFloatVector();
+        float[] javab3 = b3.toFloatVector();
+
+        Gson gson = new Gson();
+        String jsonW2 = gson.toJson(javaW2);
+        String jsonW3 = gson.toJson(javaW3);
+        String jsonb2 = gson.toJson(javab2);
+        String jsonb3 = gson.toJson(javab3);
+
+        Map<String, String> jsonData = new HashMap<>();
+        jsonData.put("w2", jsonW2);
+        jsonData.put("w3", jsonW3);
+        jsonData.put("b2", jsonb2);
+        jsonData.put("b3", jsonb3);
+
+        String data = gson.toJson(jsonData);
+        BufferedWriter writer = new BufferedWriter(new FileWriter("nn.json"));
+        writer.write(data);
+        writer.close();
     }
 
     public INDArray predict(INDArray gameState) {
@@ -59,26 +100,58 @@ public class NeuralNetwork {
         return softmax.getActivation(w3.mmul(a2).add(b3), false);
     }
 
-    public INDArray createStateVector(Board board) {
-        float[] stateVec = new float[inputSize];
-        for (int i = 0; i < inputSize; i++) {
-            stateVec[i] = board.getTileById(i).getState().ordinal();
+//    public INDArray createStateVector(Game game) {
+//        float[] stateVec = new float[inputSize];
+//        for (int i = 0; i < inputSize; i++) {
+//            stateVec[i] = game.getTileById(i).getState().ordinal();
+//        }
+//        return Nd4j.create(stateVec);
+//    }
+
+    public INDArray createStateVector(Game game) {
+        float[] stateVec = new float[566];
+        stateVec[game.getActiveAgent()] = 1.0f;
+        for(Agent agent : game.getAgents()) {
+            if (agent != null){
+                for(Figure figure : agent.getFigures()) {
+                    int figPos = figure.getPosition().getId();
+                    int agentColor = agent.getColor().ordinal();
+                    if(figPos < 112) {
+                        stateVec[4 + (agentColor * 117) + figPos] = 1.0f;
+                    } else {
+                        stateVec[4 + (agentColor * 117) + 112 + (figPos - Board.BASE_POINTERS[agentColor])] = 1.0f;
+                    }
+                }
+            }
+        }
+        Board board = game.getBoard();
+        for (int i = 472; i < 566; i++) {
+            if(board.getTileById(i-472+17).getState() == Tile.State.BLOCKED) {
+                stateVec[i] = 1.0f;
+            }
         }
         return Nd4j.create(stateVec);
     }
 
+    @Override
+    public double calcUtility(Game game, Agent agent) {
+        INDArray p = predict(createStateVector(game));
+        double agentWinProp = p.get(NDArrayIndex.indices(agent.getColor().ordinal())).getDouble();
+        return 2.0 * agentWinProp - 1.0;
+    }
+
     public void train(int numIterations) {
 
-        Instant startTime, endTime;
-        long timeElapsed;
+//        Instant startTime, endTime;
+//        long timeElapsed;
 
         // bunch of variables needed for saving intermediate results
         INDArray z2, a2, z3, a3, error2, error3, dw2, dw3, db2, db3;
         double delta;
 
         for(int i = 0; i < numIterations; i++) {
-            System.out.println("Iteration: " + (i+1));
-            startTime = Instant.now();
+//            System.out.println("Iteration: " + (i+1));
+//            startTime = Instant.now();
 
             INDArray ew2 = Nd4j.zeros(hiddenSize, inputSize);
             INDArray ew3 = Nd4j.zeros(outputSize, hiddenSize);
@@ -92,12 +165,14 @@ public class NeuralNetwork {
             shuffleArray(indices);
             agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), this);
             agents[indices[1]] = new TDLAgent(Color.getColorById(indices[1]), game.getBoard(), this);
-            agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
-            agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+//            agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
+//            agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+            agents[indices[2]] = new TDLAgent(Color.getColorById(indices[2]), game.getBoard(), this);
+            agents[indices[3]] = new TDLAgent(Color.getColorById(indices[3]), game.getBoard(), this);
             game.setAgents(agents);
             game.initActiveAgent();
 
-            INDArray currState = createStateVector(game.getBoard());
+            INDArray currState = createStateVector(game);
 
             int counter = 1;
             while (!game.isOver()) {
@@ -113,10 +188,10 @@ public class NeuralNetwork {
                     continue;
                 }
                 GameLogic.makeMoveOnGame(game, nextMove);
-                INDArray nextState = createStateVector(game.getBoard());
+                INDArray nextState = createStateVector(game);
 
-                // prediction of the two consecutive states
-                INDArray currStatePred = predict(currState);
+                // prediction of the next state (prediction of current state is a3)
+//                INDArray currStatePred = predict(currState);
                 INDArray nextStatePred = predict(nextState);
 
                 // forward pass and save intermediate results
@@ -130,12 +205,12 @@ public class NeuralNetwork {
                     INDArray z = Nd4j.zeros(outputSize);
                     z.put(game.getActiveAgent(), Nd4j.scalar(1));
                     error3 = a3.sub(z);
-                    delta = z.sub(currStatePred).sumNumber().doubleValue();
+                    delta = (z.sub(a3).sumNumber()).doubleValue();
                 } else {
                     error3 = a3.sub(nextStatePred);
-                    delta = (nextStatePred.sub(currStatePred)).sumNumber().doubleValue();
+                    delta = (nextStatePred.sub(a3)).sumNumber().doubleValue();
                 }
-                error2 = a2.mul(Nd4j.ones(a2.shape()).sub(a2));
+                error2 = (a2.mul(Nd4j.ones(a2.shape()).sub(a2))).mul((w3.transpose()).mmul(error3));
 
                 // derivatives
                 dw2 = error2.mmul(currState);
@@ -159,9 +234,9 @@ public class NeuralNetwork {
                 game.advanceToNextAgentLearning();
             }
 
-            endTime = Instant.now();
-            timeElapsed = Duration.between(startTime, endTime).toSeconds();
-            System.out.println("Game over after " + timeElapsed + " s");
+//            endTime = Instant.now();
+//            timeElapsed = Duration.between(startTime, endTime).toSeconds();
+//            System.out.println("Game over after " + timeElapsed + " s");
         }
     }
 

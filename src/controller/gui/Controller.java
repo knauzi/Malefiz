@@ -180,7 +180,7 @@ public class Controller implements EventHandler<Event>
                 case "Mensch"       -> agents[i] = new Human(Color.getColorById(i), game.getBoard());
                 case "Zufall-KI"    -> agents[i] = new RandomAI(Color.getColorById(i), game.getBoard());
                 case "Einfache-KI"  -> agents[i] = new SimpleAI(Color.getColorById(i), game.getBoard());
-                case "TDL-KI"       -> agents[i] = new TDLAgent(Color.getColorById(i), game.getBoard(), new NeuralNetwork());
+                case "TDL-KI"       -> agents[i] = new TDLAgent(Color.getColorById(i), game.getBoard(), new NeuralNetwork("nn.json"));
                 default             -> agents[i] = null;
             }
         }
