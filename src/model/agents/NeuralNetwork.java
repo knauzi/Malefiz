@@ -150,7 +150,7 @@ public class NeuralNetwork extends BaseNetwork{
         double delta;
 
         for(int i = 0; i < numIterations; i++) {
-//            System.out.println("Iteration: " + (i+1));
+            System.out.println("Iteration: " + (i+1));
 //            startTime = Instant.now();
 
             INDArray ew2 = Nd4j.zeros(hiddenSize, inputSize);
@@ -164,11 +164,11 @@ public class NeuralNetwork extends BaseNetwork{
             int[] indices = new int[] {0, 1, 2, 3};
             shuffleArray(indices);
             agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), this);
-            agents[indices[1]] = new TDLAgent(Color.getColorById(indices[1]), game.getBoard(), this);
-//            agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
-//            agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
-            agents[indices[2]] = new TDLAgent(Color.getColorById(indices[2]), game.getBoard(), this);
-            agents[indices[3]] = new TDLAgent(Color.getColorById(indices[3]), game.getBoard(), this);
+            agents[indices[1]] = new SimpleAI(Color.getColorById(indices[1]), game.getBoard());
+            agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
+            agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+//            agents[indices[2]] = new TDLAgent(Color.getColorById(indices[2]), game.getBoard(), this);
+//            agents[indices[3]] = new TDLAgent(Color.getColorById(indices[3]), game.getBoard(), this);
             game.setAgents(agents);
             game.initActiveAgent();
 

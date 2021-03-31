@@ -147,7 +147,7 @@ public class GameLogic
         }
         if (baseTileID == -1)
         {
-            System.err.println("Tried to send figure back to base but base is full!");
+            System.err.println("Tried to send figure of color " + Color.getColorAsStringById(figure.getColor().ordinal())+ " back to base but base is full!");
             System.exit(-1);
         }
 
@@ -217,7 +217,7 @@ public class GameLogic
     }
 
     /* get all possible tiles where to move block at given tile */
-    public static ArrayList<Tile> getPossibleTargetTilesOfBlock(Board board, Tile blockTile)
+    public static ArrayList<Tile> getPossibleTargetTilesOfBlock(Board board, Tile blockTile, Figure figure)
     {
         ArrayList<Tile> possibleTargetTilesofBlock = new ArrayList<>();
 
@@ -229,6 +229,7 @@ public class GameLogic
                 possibleTargetTilesofBlock.add(tiles[i]);
             }
         }
+        //possibleTargetTilesofBlock.add(figure.getPosition());
 
         return possibleTargetTilesofBlock;
     }
@@ -254,6 +255,7 @@ public class GameLogic
                             possibleMoves.add(new Move(figure, targetTile, diceResult, tiles[i]));
                         }
                     }
+                    //possibleMoves.add(new Move(figure, targetTile, diceResult, figure.getPosition()));
                 }
                 case EMPTY              -> possibleMoves.add(new Move(figure, targetTile, diceResult));
                 case OCCUPIED_RED       -> possibleMoves.add(new Move(figure, targetTile, diceResult, Color.RED));

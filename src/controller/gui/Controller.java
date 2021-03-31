@@ -108,7 +108,7 @@ public class Controller implements EventHandler<Event>
             else // block at target tile
             {
                 setSelectedTile(highlight.getTile());
-                ArrayList<Tile> blockTargets = GameLogic.getPossibleTargetTilesOfBlock(game.getBoard(), selectedTile);
+                ArrayList<Tile> blockTargets = GameLogic.getPossibleTargetTilesOfBlock(game.getBoard(), selectedTile, selectedFigure);
                 gameView.getGameBoard().setHighlightTiles(blockTargets);
                 game.setPhase(Game.Phase.MOVING_BLOCK);
                 gameView.getGameBoard().redraw(game, this);
