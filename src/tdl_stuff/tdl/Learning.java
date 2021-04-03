@@ -37,6 +37,8 @@ public class Learning {
 
     public void train(int numIter) {
 
+        System.out.println("Start training ...");
+
         Instant startTime, endTime;
         long timeElapsed;
 
@@ -44,23 +46,33 @@ public class Learning {
 
         for(int i = 1; i <= numIter; i++) {
 
-//            System.out.println("Iteration: " + (i+1));
+            if(i % 100 == 0) {
+                System.out.print("|");
+            }
+
+//            System.out.print("|");
+//            if(i % 10 == 0) {
+//                System.out.print(" ");
+//            }
+//            System.out.println("Iteration: " + (i));
 //            startTime = Instant.now();
 
             if(i % 1000 == 0) {
-                System.out.println("Iteration: " + (i+1));
+                System.out.println();
+                System.out.println("Iteration: " + (i));
                 endTime = Instant.now();
                 timeElapsed = Duration.between(startTime, endTime).toMinutes();
                 System.out.println("Time passed (total): " + timeElapsed + " min");
                 playTestGames();
                 try {
-                    nn.writeTo("src/tdl_stuff/models/SavedNN_1");
+                    nn.writeTo("src/tdl_stuff/models/SavedNN_2P_TDL_vs_Simple");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
 
-            Game game = initGame();
+//            Game game = initGame();
+            Game game = initGame2P();
             double[] currState = Utils.createStateVector(game);
 
             while (!game.isOver()) {
@@ -75,6 +87,10 @@ public class Learning {
                 GameLogic.makeMoveOnGame(game, nextMove);
                 double[]nextState = Utils.createStateVector(game);
 
+//                Instant startTime2, endTime2;
+//                long timeElapsed2;
+//                startTime2 = Instant.now();
+
                 if(game.isOver()) {
                     double[] z = new double[nn.hidden[nn.hidden.length-1].length];
                     z[game.getActiveAgent()] = 1.0;
@@ -84,6 +100,10 @@ public class Learning {
                     backprop(currState, currStateOutput, nextStateOutput);
                 }
 
+//                endTime2 = Instant.now();
+//                timeElapsed2 = Duration.between(startTime2, endTime2).toMillis();
+//                System.out.println("Time for backprop: " + timeElapsed2 + " ms");
+
                 currState = nextState.clone();
                 game.advanceToNextAgentLearning();
             }
@@ -91,7 +111,8 @@ public class Learning {
 //            endTime = Instant.now();
 //            timeElapsed = Duration.between(startTime, endTime).toSeconds();
 //            System.out.println("Game over after " + timeElapsed + " s");
-
+//            System.out.println(game.getBoard());
+//            System.out.println();
         }
 
     }
@@ -115,7 +136,8 @@ public class Learning {
                 gamesWonByTDLAgent++;
             }
         }
-        System.out.println("Win rate of TDL-Agent against 3 SimpleAI's: " + (gamesWonByTDLAgent / 100.0));
+//        System.out.println("Win rate of TDL-Agent against 3 SimpleAI's: " + (gamesWonByTDLAgent / 100.0));
+        System.out.println("Win rate of TDL-Agent against SimpleAI: " + (gamesWonByTDLAgent / 100.0));
     }
 
     private Move getNextMove(Game game) {
@@ -132,8 +154,27 @@ public class Learning {
 
         agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), nn);
         agents[indices[1]] = new TDLAgent(Color.getColorById(indices[1]), game.getBoard(), nn);
-        agents[indices[2]] = new TDLAgent(Color.getColorById(indices[2]), game.getBoard(), nn);
-        agents[indices[3]] = new TDLAgent(Color.getColorById(indices[3]), game.getBoard(), nn);
+//        agents[indices[2]] = new TDLAgent(Color.getColorById(indices[2]), game.getBoard(), nn);
+//        agents[indices[3]] = new TDLAgent(Color.getColorById(indices[3]), game.getBoard(), nn);
+        agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
+        agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+
+        game.setAgents(agents);
+        game.initActiveAgent();
+
+        return game;
+    }
+
+    private Game initGame2P() {
+        Game game = new Game();
+        Agent[] agents = new Agent[4];
+        int[] indices = new int[] {0, 1, 2, 3};
+        shuffleArray(indices);
+
+        agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), nn);
+        agents[indices[1]] = new SimpleAI(Color.getColorById(indices[1]), game.getBoard());
+        agents[indices[2]] = null;
+        agents[indices[3]] = null;
 
         game.setAgents(agents);
         game.initActiveAgent();
@@ -149,8 +190,10 @@ public class Learning {
 
         agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), nn);
         agents[indices[1]] = new SimpleAI(Color.getColorById(indices[1]), game.getBoard());
-        agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
-        agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+//        agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
+//        agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+        agents[indices[2]] = null;
+        agents[indices[3]] = null;
 
         game.setAgents(agents);
         game.initActiveAgent();

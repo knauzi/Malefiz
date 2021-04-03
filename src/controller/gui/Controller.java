@@ -9,15 +9,21 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
-import model.agents.*;
+import model.agents.Agent;
+import model.agents.Human;
+import model.agents.RandomAI;
+import model.agents.SimpleAI;
 import model.game.*;
 import model.utils.Color;
+import tdl_stuff.net.NeuralNetwork;
+import tdl_stuff.tdl.TDLAgent;
 import view.gui.ConfigView;
 import view.gui.FigureGUI;
 import view.gui.GameBoard;
 import view.gui.GameView;
 import view.gui.utils.Highlight;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Controller implements EventHandler<Event>
@@ -180,7 +186,13 @@ public class Controller implements EventHandler<Event>
                 case "Mensch"       -> agents[i] = new Human(Color.getColorById(i), game.getBoard());
                 case "Zufall-KI"    -> agents[i] = new RandomAI(Color.getColorById(i), game.getBoard());
                 case "Einfache-KI"  -> agents[i] = new SimpleAI(Color.getColorById(i), game.getBoard());
-                case "TDL-KI"       -> agents[i] = new TDLAgent(Color.getColorById(i), game.getBoard(), new NeuralNetwork("nn.json"));
+                case "TDL-KI"       -> {
+                    try {
+                        agents[i] = new TDLAgent(Color.getColorById(i), game.getBoard(), NeuralNetwork.readFrom("src/tdl_stuff/models/SavedNN_2"));
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
                 default             -> agents[i] = null;
             }
         }
