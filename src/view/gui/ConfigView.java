@@ -34,11 +34,11 @@ public class ConfigView implements View
         buildConfigView(controller);
     }
 
-    // TODO this is bullshit crap fuck -> revise !!
+    // TODO this is pretty shitty -> revise !! (delete names, ...)
     public void buildConfigView(Controller controller)
     {
         final HBox[] hbs = new HBox[NUM_AGENTS];
-        final String[] allTypes = new String[]{ "-", "Mensch", "Zufall-KI", "Einfache-KI", "TDL-KI" };
+        final String[] allTypes = new String[]{ "-", "Mensch", "Zufall (KI)", "Einfach (KI)", "Experte (KI)", "TDL-KI" };
 
         // column labels
         HBox topRow = new HBox();

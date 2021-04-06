@@ -9,14 +9,11 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
-import model.agents.Agent;
-import model.agents.Human;
-import model.agents.RandomAI;
-import model.agents.SimpleAI;
+import model.agents.*;
 import model.game.*;
 import model.utils.Color;
 import tdl_stuff.net.NeuralNetwork;
-import tdl_stuff.tdl.TDLAgent;
+import tdl_stuff.tdl.FourPlayer.TDLAgent4P;
 import view.gui.ConfigView;
 import view.gui.FigureGUI;
 import view.gui.GameBoard;
@@ -184,11 +181,12 @@ public class Controller implements EventHandler<Event>
             switch (types.get(i).getValue())
             {
                 case "Mensch"       -> agents[i] = new Human(Color.getColorById(i), game.getBoard());
-                case "Zufall-KI"    -> agents[i] = new RandomAI(Color.getColorById(i), game.getBoard());
-                case "Einfache-KI"  -> agents[i] = new SimpleAI(Color.getColorById(i), game.getBoard());
+                case "Zufall (KI)"    -> agents[i] = new RandomAI(Color.getColorById(i), game.getBoard());
+                case "Einfach (KI)"  -> agents[i] = new SimpleAI(Color.getColorById(i), game.getBoard());
+                case "Experte (KI)"  -> agents[i] = new ExpertAI(Color.getColorById(i), game.getBoard());
                 case "TDL-KI"       -> {
                     try {
-                        agents[i] = new TDLAgent(Color.getColorById(i), game.getBoard(), NeuralNetwork.readFrom("src/tdl_stuff/models/SavedNN_2"));
+                        agents[i] = new TDLAgent4P(Color.getColorById(i), game.getBoard(), NeuralNetwork.readFrom("src/tdl_stuff/models/SavedNN_2P_TDL_SP_KickStart"));
                     } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }

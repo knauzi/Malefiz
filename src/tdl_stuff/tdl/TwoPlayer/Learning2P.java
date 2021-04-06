@@ -1,9 +1,8 @@
-package tdl_stuff.tdl;
+package tdl_stuff.tdl.TwoPlayer;
 
 import model.agents.Agent;
 import model.agents.ArtificialAgent;
-import model.agents.RandomAI;
-import model.agents.SimpleAI;
+import model.agents.ExpertAI;
 import model.game.Game;
 import model.game.GameLogic;
 import model.game.Move;
@@ -17,7 +16,7 @@ import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Learning {
+public class Learning2P {
 
     private final NeuralNetwork nn;
     private final double LAMBDA;
@@ -26,7 +25,7 @@ public class Learning {
     private final double[][] Ew;
     private final double[][][] Ev;
 
-    public Learning(NeuralNetwork nn, double lambda, double alpha) {
+    public Learning2P(NeuralNetwork nn, double lambda, double alpha) {
         this.nn = nn;
         Ew = new double[this.nn.hidden[0].length][this.nn.hidden[1].length];
         Ev = new double[this.nn.input.length][this.nn.hidden[0].length][this.nn.hidden[1].length];
@@ -65,15 +64,14 @@ public class Learning {
                 System.out.println("Time passed (total): " + timeElapsed + " min");
                 playTestGames();
                 try {
-                    nn.writeTo("src/tdl_stuff/models/SavedNN_2P_TDL_vs_Simple");
+                    nn.writeTo("src/tdl_stuff/models/TwoPlayer/SavedNN_2P_TDL_SP_KickStart_005_100000");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
 
-//            Game game = initGame();
             Game game = initGame2P();
-            double[] currState = Utils.createStateVector(game);
+            double[] currState = Utils2P.createStateVector(game);
 
             while (!game.isOver()) {
 
@@ -85,34 +83,20 @@ public class Learning {
                     continue;
                 }
                 GameLogic.makeMoveOnGame(game, nextMove);
-                double[]nextState = Utils.createStateVector(game);
-
-//                Instant startTime2, endTime2;
-//                long timeElapsed2;
-//                startTime2 = Instant.now();
+                double[]nextState = Utils2P.createStateVector(game);
 
                 if(game.isOver()) {
                     double[] z = new double[nn.hidden[nn.hidden.length-1].length];
-                    z[game.getActiveAgent()] = 1.0;
+                    z[Utils2P.get2PIndexOfActivePlayer(game)] = 1.0;
                     backprop(currState, currStateOutput, z);
                 }else {
                     double[] nextStateOutput = nn.getValue(nextState);
                     backprop(currState, currStateOutput, nextStateOutput);
                 }
 
-//                endTime2 = Instant.now();
-//                timeElapsed2 = Duration.between(startTime2, endTime2).toMillis();
-//                System.out.println("Time for backprop: " + timeElapsed2 + " ms");
-
                 currState = nextState.clone();
                 game.advanceToNextAgentLearning();
             }
-
-//            endTime = Instant.now();
-//            timeElapsed = Duration.between(startTime, endTime).toSeconds();
-//            System.out.println("Game over after " + timeElapsed + " s");
-//            System.out.println(game.getBoard());
-//            System.out.println();
         }
 
     }
@@ -132,12 +116,11 @@ public class Learning {
                     game.advanceToNextAgentLearning();
                 }
             }
-            if (game.getAgent(game.getActiveAgent()) instanceof TDLAgent) {
+            if (game.getAgent(game.getActiveAgent()) instanceof TDLAgent2P) {
                 gamesWonByTDLAgent++;
             }
         }
-//        System.out.println("Win rate of TDL-Agent against 3 SimpleAI's: " + (gamesWonByTDLAgent / 100.0));
-        System.out.println("Win rate of TDL-Agent against SimpleAI: " + (gamesWonByTDLAgent / 100.0));
+        System.out.println("Win rate of TDL-Agent against ExpertAI: " + (gamesWonByTDLAgent / 100.0));
     }
 
     private Move getNextMove(Game game) {
@@ -146,33 +129,15 @@ public class Learning {
         return ((ArtificialAgent) game.getAgent(game.getActiveAgent())).getNextMove(game, diceResult);
     }
 
-    private Game initGame() {
-        Game game = new Game();
-        Agent[] agents = new Agent[4];
-        int[] indices = new int[] {0, 1, 2, 3};
-        shuffleArray(indices);
-
-        agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), nn);
-        agents[indices[1]] = new TDLAgent(Color.getColorById(indices[1]), game.getBoard(), nn);
-//        agents[indices[2]] = new TDLAgent(Color.getColorById(indices[2]), game.getBoard(), nn);
-//        agents[indices[3]] = new TDLAgent(Color.getColorById(indices[3]), game.getBoard(), nn);
-        agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
-        agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
-
-        game.setAgents(agents);
-        game.initActiveAgent();
-
-        return game;
-    }
-
     private Game initGame2P() {
         Game game = new Game();
         Agent[] agents = new Agent[4];
         int[] indices = new int[] {0, 1, 2, 3};
         shuffleArray(indices);
 
-        agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), nn);
-        agents[indices[1]] = new SimpleAI(Color.getColorById(indices[1]), game.getBoard());
+        agents[indices[0]] = new TDLAgent2P(Color.getColorById(indices[0]), game.getBoard(), nn);
+//        agents[indices[1]] = new TDLAgent2P(Color.getColorById(indices[1]), game.getBoard(), nn);
+        agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
         agents[indices[2]] = null;
         agents[indices[3]] = null;
 
@@ -188,8 +153,8 @@ public class Learning {
         int[] indices = new int[] {0, 1, 2, 3};
         shuffleArray(indices);
 
-        agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), nn);
-        agents[indices[1]] = new SimpleAI(Color.getColorById(indices[1]), game.getBoard());
+        agents[indices[0]] = new TDLAgent2P(Color.getColorById(indices[0]), game.getBoard(), nn);
+        agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
 //        agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
 //        agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
         agents[indices[2]] = null;

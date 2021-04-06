@@ -1,77 +1,45 @@
-package tdl_stuff.tdl;
+package tdl_stuff.tdl.ThreePlayer;
 
 import model.agents.Agent;
-import model.agents.RandomAI;
 import model.game.*;
-import model.utils.Color;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class Utils {
+public class Utils3P {
 
-    public static double calcUtility(double[] output, Agent agent) {
-        //norm(output);
-        double agentWinProp = output[agent.getColor().ordinal()];
-        return agentWinProp - (sum(output) - agentWinProp);
-        //return 2.0 * agentWinProp - 1.0;
-        // return agentWinProp;
+    public static double calcUtility(double[] output, Game game, Agent agent) {
+        int indexAgent = get3PIndex(game, agent);
+        double agentWinProp = output[indexAgent];
+        return agentWinProp - (sum(output) - output[indexAgent]);
     }
 
-//    public static double[] createStateVector(Game game) {
-//        double[] stateVec = new double[566];
-//        stateVec[game.getActiveAgent()] = 1.0;
-//        for (Agent agent : game.getAgents()) {
-//            if (agent != null) {
-//                for (Figure figure : agent.getFigures()) {
-//                    int figPos = figure.getPosition().getId();
-//                    int agentColor = agent.getColor().ordinal();
-//                    if (figPos < 112) {
-//                        stateVec[4 + (agentColor * 117) + figPos] = 1.0;
-//                    } else {
-//                        stateVec[4 + (agentColor * 117) + 112 + (figPos - Board.BASE_POINTERS[agentColor])] = 1.0;
-//                    }
-//                }
-//            }
-//        }
-//        Board board = game.getBoard();
-//        for (int i = 472; i < 566; i++) {
-//            if (board.getTileById(i - 472 + 17).getState() == Tile.State.BLOCKED) {
-//                stateVec[i] = 1.0;
-//            }
-//        }
-//        return stateVec;
-//    }
-
     public static double[] createStateVector(Game game) {
-//        double[] stateVec = new double[190];
-        double[] stateVec = new double[96];
+        double[] stateVec = new double[72];
 
-        stateVec[game.getActiveAgent()] = 1.0;
+        stateVec[get3PIndexOfActivePlayer(game)] = 1.0;
 
-        for (int i = 0; i < 4; i++) {
-            Agent agent = game.getAgent(i);
-            if(agent == null) {
-                agent = new RandomAI(Color.getColorById(i), game.getBoard());
-            }
+        ArrayList<Agent> agents = get3PAgents(game);
+        for (int i = 0; i < 3; i++) {
+            Agent agent = agents.get(i);
 
             // smart features
             Figure bestFigure = getBestFigure(agent);
-            stateVec[4 + (i * 23)    ] = bestFigure.getPosition().getDist();
-            stateVec[4 + (i * 23) + 1] = getNumBarricadesBetweenBestFigureAndGoal(bestFigure);
-            stateVec[4 + (i * 23) + 2] = getAverageNumberOfStepsFiguresCanMoveTowardsGoal(agent);
-            stateVec[4 + (i * 23) + 3] = getAverageDistToGoal(agent);
-            stateVec[4 + (i * 23) + 4] = getNumVulnerableFigures(agent);
-            stateVec[4 + (i * 23) + 5] = getNumEnemyFiguresCloserToGoalThanBestFigure(game, agent, bestFigure.getPosition().getDist());
-            stateVec[4 + (i * 23) + 6] = getHitProbabilityByEnemyFigures(game, agent);
-            stateVec[4 + (i * 23) + 7] = getNumFiguresInBase(agent);
-            stateVec[4 + (i * 23) + 8] = getNumFiguresInHouse(agent);
+            stateVec[3 + (i * 23)    ] = bestFigure.getPosition().getDist();
+            stateVec[3 + (i * 23) + 1] = getNumBarricadesBetweenBestFigureAndGoal(bestFigure);
+            stateVec[3 + (i * 23) + 2] = getAverageNumberOfStepsFiguresCanMoveTowardsGoal(agent);
+            stateVec[3 + (i * 23) + 3] = getAverageDistToGoal(agent);
+            stateVec[3 + (i * 23) + 4] = getNumVulnerableFigures(agent);
+            stateVec[3 + (i * 23) + 5] = getNumEnemyFiguresCloserToGoalThanBestFigure(game, agent, bestFigure.getPosition().getDist());
+            stateVec[3 + (i * 23) + 6] = getHitProbabilityByEnemyFigures(game, agent);
+            stateVec[3 + (i * 23) + 7] = getNumFiguresInBase(agent);
+            stateVec[3 + (i * 23) + 8] = getNumFiguresInHouse(agent);
 
             // positional features
             double[] rowCounts = getRowCounts(agent);
             for(int j = 0; j < rowCounts.length; j++) {
-                stateVec[4 + (i * 23) + 9 + j] = rowCounts[j];
+                stateVec[3 + (i * 23) + 9 + j] = rowCounts[j];
             }
 
         }
@@ -86,6 +54,43 @@ public class Utils {
 //        }
 
         return stateVec;
+    }
+
+
+    private static int get3PIndex(Game game, Agent agent) {
+        int counter = 0;
+        for(int i = 0; i < 4; i++){
+            if(game.getAgent(i) != null){
+                if(agent.getColor().ordinal() == i){
+                    return counter;
+                }
+                counter++;
+            }
+        }
+        return 0;
+    }
+
+    private static ArrayList<Agent> get3PAgents(Game game) {
+        ArrayList<Agent> agents = new ArrayList<>();
+        for(Agent agent : game.getAgents()){
+            if(agent != null){
+                agents.add(agent);
+            }
+        }
+        return agents;
+    }
+
+    public static int get3PIndexOfActivePlayer(Game game) {
+        int counter = 0;
+        for(int i = 0; i < 4; i++){
+            if(game.getAgent(i) != null){
+                if(game.getActiveAgent() == i){
+                    return counter;
+                }
+                counter++;
+            }
+        }
+        return 0;
     }
 
     private static double[] getRowCounts(Agent agent) {
@@ -126,7 +131,7 @@ public class Utils {
                 }
             }
         }
-        return totalHits / (18.0);
+        return totalHits / (12.0);
     }
 
     private static boolean containsTileOccupiedByAgent(ArrayList<Tile> possibleTargetTiles, int agentColor) {
@@ -251,56 +256,6 @@ public class Utils {
         for (double value:values)
             result += value;
         return result;
-    }
-
-    private static void norm(double[] vector) {
-        double sum = sum(vector);
-        for(int i = 0; i < vector.length; i++) {
-            vector[i] /= sum;
-        }
-    }
-
-    private static double getPossibleHits(Figure enemyFigure, int targetColor) {
-        double numPossibleHits = 0.0;
-
-        int diceResult = 6;
-        Tile root = enemyFigure.getPosition();          // start search from figures position
-        HashSet<Tile> visited = new HashSet<>();                 // keep track of which tiles were already visited
-        ArrayDeque<Tile> queue = new ArrayDeque<>();             // queue of nodes to traverse next
-        queue.push(root);
-
-        Tile currentTile;
-        int currentDepth = 0;
-        int tilesAtCurrentDepth = 1;
-        while (!queue.isEmpty()) {
-            currentTile = queue.remove();
-
-            if (currentTile.getState().ordinal() == targetColor) {
-                numPossibleHits++;
-            }
-
-            if(currentDepth == diceResult){
-                continue;
-            }
-
-            if (currentTile.getState() != Tile.State.BLOCKED) {
-                for (Tile neighbour : currentTile.getNeighbours()) {
-                    if (!visited.contains(neighbour)) {
-                        queue.add(neighbour);
-                    }
-                }
-            }
-
-            visited.add(currentTile);
-            tilesAtCurrentDepth--;
-
-            if (tilesAtCurrentDepth == 0) {
-                currentDepth++;
-                tilesAtCurrentDepth = queue.size();
-            }
-        }
-
-        return numPossibleHits;
     }
 
     private static boolean isVulnerable(Figure figure) {

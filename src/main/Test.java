@@ -1,19 +1,12 @@
 package main;
 
 import model.agents.*;
-import model.game.Board;
 import model.game.Game;
 import model.game.GameLogic;
 import model.game.Move;
 import model.utils.Color;
-import tdl_stuff.net.NeuralNetwork;
-import tdl_stuff.tdl.Learning;
-import tdl_stuff.tdl.TDLAgent;
-import tdl_stuff.tdl.Utils;
+import tdl_stuff.tdl.FourPlayer.TDLAgent4P;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -70,26 +63,26 @@ public class Test {
 
     private static void playTestGames() {
         int gamesWonByTDLAgent = 0;
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < 1000; i++) {
             Game game = initGameTest();
 
             int counter = 0;
             while (!game.isOver()) {
 
-                if(counter % 25 == 0) {
-                    System.out.println(game.getBoard());
-                    System.out.println();
-                    for(double k = 0; k < 190; k++){
-                        System.out.print(k + " ");
-                    }
-                    System.out.println();
-                    for(double j : Utils.createStateVector(game)){
-                        System.out.print(j + " ");
-                    }
-                    System.out.println();
-                    System.out.println();
-                }
-                counter++;
+//                if(counter % 25 == 0) {
+//                    System.out.println(game.getBoard());
+//                    System.out.println();
+//                    for(double k = 0; k < 190; k++){
+//                        System.out.print(k + " ");
+//                    }
+//                    System.out.println();
+//                    for(double j : Utils.createStateVector(game)){
+//                        System.out.print(j + " ");
+//                    }
+//                    System.out.println();
+//                    System.out.println();
+//                }
+//                counter++;
 
                 Move nextMove = getNextMove(game);
                 if (nextMove == null) {
@@ -101,7 +94,7 @@ public class Test {
                     game.advanceToNextAgentLearning();
                 }
             }
-            if (game.getAgent(game.getActiveAgent()) instanceof TDLAgent) {
+            if (game.getAgent(game.getActiveAgent()) instanceof TDLAgent4P) {
                 gamesWonByTDLAgent++;
             }
         }
@@ -136,8 +129,8 @@ public class Test {
 //        agents[indices[1]] = new RandomAI(Color.getColorById(indices[1]), game.getBoard());
         agents[indices[0]] = null;
         agents[indices[1]] = null;
-        agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
-        agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+        agents[indices[2]] = new ExpertAI(Color.getColorById(indices[2]), game.getBoard());
+        agents[indices[3]] = new ExpertAI(Color.getColorById(indices[3]), game.getBoard());
 
         game.setAgents(agents);
         game.initActiveAgent();

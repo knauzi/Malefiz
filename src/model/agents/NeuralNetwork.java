@@ -10,8 +10,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.io.*;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -164,9 +162,9 @@ public class NeuralNetwork extends BaseNetwork{
             int[] indices = new int[] {0, 1, 2, 3};
             shuffleArray(indices);
             agents[indices[0]] = new TDLAgent(Color.getColorById(indices[0]), game.getBoard(), this);
-            agents[indices[1]] = new SimpleAI(Color.getColorById(indices[1]), game.getBoard());
-            agents[indices[2]] = new SimpleAI(Color.getColorById(indices[2]), game.getBoard());
-            agents[indices[3]] = new SimpleAI(Color.getColorById(indices[3]), game.getBoard());
+            agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
+            agents[indices[2]] = new ExpertAI(Color.getColorById(indices[2]), game.getBoard());
+            agents[indices[3]] = new ExpertAI(Color.getColorById(indices[3]), game.getBoard());
 //            agents[indices[2]] = new TDLAgent(Color.getColorById(indices[2]), game.getBoard(), this);
 //            agents[indices[3]] = new TDLAgent(Color.getColorById(indices[3]), game.getBoard(), this);
             game.setAgents(agents);

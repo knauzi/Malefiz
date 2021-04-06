@@ -1,4 +1,4 @@
-package tdl_stuff.tdl;
+package tdl_stuff.tdl.FourPlayer;
 
 import model.agents.ArtificialAgent;
 import model.game.Board;
@@ -10,11 +10,11 @@ import tdl_stuff.net.NeuralNetwork;
 
 import java.util.List;
 
-public class TDLAgent extends ArtificialAgent {
+public class TDLAgent4P extends ArtificialAgent {
 
     private final NeuralNetwork neuralNetwork;
 
-    public TDLAgent(Color color, Board board, NeuralNetwork neuralNetwork) {
+    public TDLAgent4P(Color color, Board board, NeuralNetwork neuralNetwork) {
         super(color, board);
         this.neuralNetwork = neuralNetwork;
     }
@@ -30,7 +30,7 @@ public class TDLAgent extends ArtificialAgent {
         Move nextMove = null;
         for (Move move : possibleMoves) {
             GameLogic.makeMoveOnGame(game, move);
-            double utility = Utils.calcUtility(neuralNetwork.getValue(Utils.createStateVector(game)), this);
+            double utility = Utils4P.calcUtility(neuralNetwork.getValue(Utils4P.createStateVector(game)), this);
             if (utility > maxUtility) {
                 maxUtility = utility;
                 nextMove = move;
