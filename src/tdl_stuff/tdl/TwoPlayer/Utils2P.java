@@ -226,7 +226,6 @@ public class Utils2P {
         return numBarricades;
     }
 
-    // TODO: consider case where more than one possible position is available
     private static Tile getNextPositionTowardsGoal(Tile position) {
         Tile[] neighbours = position.getNeighbours();
         int minDist = Integer.MAX_VALUE;
@@ -238,7 +237,36 @@ public class Utils2P {
                 minDist = dist;
             }
         }
+        for(Tile neighbour : neighbours){
+            if(neighbour.getDist() == minDist && !neighbour.equals(nextTile) && minDist != 38){
+                return getBestNeighbour(neighbour, nextTile);
+            }
+        }
         return nextTile;
+    }
+
+    private static Tile getBestNeighbour(Tile neighbour1, Tile neighbour2) {
+        Tile n1 = neighbour1, n2 = neighbour2;
+        int lookahead;
+        if (n1.getDist() == 34) {
+            lookahead = 4;
+        } else if (n1.getDist() == 18){
+            lookahead = 17;
+        } else {
+            return neighbour1;
+        }
+        int blockCount1 = 0, blockCount2 = 0;
+        for(int i = 0; i < lookahead; i++){
+            n1 = getNextPositionTowardsGoal(n1);
+            if(n1.getState() == Tile.State.BLOCKED){
+                blockCount1++;
+            }
+            n2 = getNextPositionTowardsGoal(n2);
+            if(n2.getState() == Tile.State.BLOCKED){
+                blockCount2++;
+            }
+        }
+        return blockCount1 <= blockCount2 ? neighbour1 : neighbour2;
     }
 
     private static Figure getBestFigure(Agent agent) {

@@ -2,10 +2,10 @@ package tdl_stuff.tdl.ThreePlayer;
 
 import model.agents.Agent;
 import model.game.*;
+import model.utils.Color;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utils3P {
 
@@ -56,18 +56,15 @@ public class Utils3P {
         return stateVec;
     }
 
-
     private static int get3PIndex(Game game, Agent agent) {
-        int counter = 0;
-        for(int i = 0; i < 4; i++){
-            if(game.getAgent(i) != null){
-                if(agent.getColor().ordinal() == i){
-                    return counter;
-                }
-                counter++;
+        ArrayList<Agent> agents = get3PAgents(game);
+        Color agentColor = agent.getColor();
+        for(int i = 0; i < 3; i++){
+            if(agentColor == agents.get(i).getColor()){
+                return i;
             }
         }
-        return 0;
+        return -1;
     }
 
     private static ArrayList<Agent> get3PAgents(Game game) {
@@ -81,16 +78,14 @@ public class Utils3P {
     }
 
     public static int get3PIndexOfActivePlayer(Game game) {
-        int counter = 0;
-        for(int i = 0; i < 4; i++){
-            if(game.getAgent(i) != null){
-                if(game.getActiveAgent() == i){
-                    return counter;
-                }
-                counter++;
+        ArrayList<Agent> agents = get3PAgents(game);
+        Color activeColor = game.getAgent(game.getActiveAgent()).getColor();
+        for(int i = 0; i < 3; i++){
+            if(activeColor == agents.get(i).getColor()){
+                return i;
             }
         }
-        return 0;
+        return -1;
     }
 
     private static double[] getRowCounts(Agent agent) {
@@ -223,7 +218,6 @@ public class Utils3P {
         return numBarricades;
     }
 
-    // TODO: consider case where more than one possible position is available
     private static Tile getNextPositionTowardsGoal(Tile position) {
         Tile[] neighbours = position.getNeighbours();
         int minDist = Integer.MAX_VALUE;
@@ -235,7 +229,36 @@ public class Utils3P {
                 minDist = dist;
             }
         }
+        for(Tile neighbour : neighbours){
+            if(neighbour.getDist() == minDist && !neighbour.equals(nextTile) && minDist != 38){
+                return getBestNeighbour(neighbour, nextTile);
+            }
+        }
         return nextTile;
+    }
+
+    private static Tile getBestNeighbour(Tile neighbour1, Tile neighbour2) {
+        Tile n1 = neighbour1, n2 = neighbour2;
+        int lookahead;
+        if (n1.getDist() == 34) {
+            lookahead = 4;
+        } else if (n1.getDist() == 18){
+            lookahead = 17;
+        } else {
+            return neighbour1;
+        }
+        int blockCount1 = 0, blockCount2 = 0;
+        for(int i = 0; i < lookahead; i++){
+            n1 = getNextPositionTowardsGoal(n1);
+            if(n1.getState() == Tile.State.BLOCKED){
+                blockCount1++;
+            }
+            n2 = getNextPositionTowardsGoal(n2);
+            if(n2.getState() == Tile.State.BLOCKED){
+                blockCount2++;
+            }
+        }
+        return blockCount1 <= blockCount2 ? neighbour1 : neighbour2;
     }
 
     private static Figure getBestFigure(Agent agent) {

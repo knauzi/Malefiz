@@ -9,8 +9,6 @@ import model.game.Move;
 import model.utils.Color;
 import tdl_stuff.net.HiddenUnit;
 import tdl_stuff.net.NeuralNetwork;
-import tdl_stuff.tdl.TwoPlayer.TDLAgent2P;
-import tdl_stuff.tdl.TwoPlayer.Utils2P;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -66,7 +64,7 @@ public class Learning3P {
             }
 
             Game game = initGame();
-            double[] currState = Utils2P.createStateVector(game);
+            double[] currState = Utils3P.createStateVector(game);
 
             while (!game.isOver()) {
 
@@ -78,7 +76,7 @@ public class Learning3P {
                     continue;
                 }
                 GameLogic.makeMoveOnGame(game, nextMove);
-                double[]nextState = Utils2P.createStateVector(game);
+                double[]nextState = Utils3P.createStateVector(game);
 
                 if(game.isOver()) {
                     double[] z = new double[nn.hidden[nn.hidden.length-1].length];
@@ -112,7 +110,7 @@ public class Learning3P {
                     game.advanceToNextAgentLearning();
                 }
             }
-            if (game.getAgent(game.getActiveAgent()) instanceof TDLAgent2P) {
+            if (game.getAgent(game.getActiveAgent()) instanceof TDLAgent3P) {
                 gamesWonByTDLAgent++;
             }
         }
