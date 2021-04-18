@@ -3,6 +3,7 @@ package tdl_stuff.tdl.ThreePlayer;
 import model.agents.Agent;
 import model.agents.ArtificialAgent;
 import model.agents.ExpertAI;
+import model.agents.RandomAI;
 import model.game.Game;
 import model.game.GameLogic;
 import model.game.Move;
@@ -57,7 +58,8 @@ public class Learning3P {
                 System.out.println("Time passed (total): " + timeElapsed + " min");
                 playTestGames();
                 try {
-                    nn.writeTo("src/tdl_stuff/models/ThreePlayer/SavedNN_3P_TDL_Expert");
+//                    nn.writeTo("src/tdl_stuff/models/ThreePlayer/SavedNN_3P_TDL_Expert_Random");
+                    nn.writeTo("src/tdl_stuff/models/ThreePlayer/SavedNN_3P_TDL_Expert_Plus_50");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -131,6 +133,7 @@ public class Learning3P {
 
         agents[indices[0]] = new TDLAgent3P(Color.getColorById(indices[0]), game.getBoard(), nn);
         agents[indices[1]] = new TDLAgent3P(Color.getColorById(indices[1]), game.getBoard(), nn);
+//        agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
         agents[indices[2]] = new ExpertAI(Color.getColorById(indices[2]), game.getBoard());
         agents[indices[3]] = null;
 

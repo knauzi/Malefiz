@@ -58,7 +58,7 @@ public class Learning4P {
                 System.out.println("Time passed (total): " + timeElapsed + " min");
                 playTestGames();
                 try {
-                    nn.writeTo("src/tdl_stuff/models/FourPlayer/SavedNN_4P_TDL_Expert_Random");
+                    nn.writeTo("src/tdl_stuff/models/FourPlayer/SavedNN_4P_Expert_Random_Plus_50");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -130,10 +130,12 @@ public class Learning4P {
         int[] indices = new int[] {0, 1, 2, 3};
         shuffleArray(indices);
 
-        agents[indices[0]] = new TDLAgent4P(Color.getColorById(indices[0]), game.getBoard(), nn);
-        agents[indices[1]] = new TDLAgent4P(Color.getColorById(indices[1]), game.getBoard(), nn);
+//        agents[indices[0]] = new TDLAgent4P(Color.getColorById(indices[0]), game.getBoard(), nn);
+//        agents[indices[1]] = new TDLAgent4P(Color.getColorById(indices[1]), game.getBoard(), nn);
+        agents[indices[0]] = new RandomAI(Color.getColorById(indices[0]), game.getBoard());
+        agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
         agents[indices[2]] = new ExpertAI(Color.getColorById(indices[2]), game.getBoard());
-        agents[indices[3]] = new RandomAI(Color.getColorById(indices[3]), game.getBoard());
+        agents[indices[3]] = new ExpertAI(Color.getColorById(indices[3]), game.getBoard());
 
         game.setAgents(agents);
         game.initActiveAgent();

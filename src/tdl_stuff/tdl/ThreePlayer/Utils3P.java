@@ -57,11 +57,14 @@ public class Utils3P {
     }
 
     private static int get3PIndex(Game game, Agent agent) {
-        ArrayList<Agent> agents = get3PAgents(game);
         Color agentColor = agent.getColor();
-        for(int i = 0; i < 3; i++){
-            if(agentColor == agents.get(i).getColor()){
-                return i;
+        int counter = 0;
+        for(int i = 0; i < 4; i++){
+            if(game.getAgent(i) != null){
+                if(agentColor == game.getAgent(i).getColor()){
+                    return counter;
+                }
+                counter++;
             }
         }
         return -1;
@@ -78,11 +81,14 @@ public class Utils3P {
     }
 
     public static int get3PIndexOfActivePlayer(Game game) {
-        ArrayList<Agent> agents = get3PAgents(game);
-        Color activeColor = game.getAgent(game.getActiveAgent()).getColor();
-        for(int i = 0; i < 3; i++){
-            if(activeColor == agents.get(i).getColor()){
-                return i;
+        int activeAgentIndex = game.getActiveAgent();
+        int counter = 0;
+        for(int i = 0; i < 4; i++){
+            if(game.getAgent(i) != null){
+                if(activeAgentIndex == i){
+                    return counter;
+                }
+                counter++;
             }
         }
         return -1;

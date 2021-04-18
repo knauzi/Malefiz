@@ -11,14 +11,14 @@ public class NNTraining {
 //        NeuralNetwork nn = new NeuralNetwork("nn.json");
         NeuralNetwork nn = new NeuralNetwork();
 
-        for(int i = 1; i <= 130; i++) {
+        for(int i = 1; i <= 1000; i++) {
             nn.train(100);
             try {
                 nn.save("nn.json");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println("Iterations: " + (7000 + i*100));
+            System.out.println("Iterations: " + (i*100));
         }
 
     }

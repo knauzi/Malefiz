@@ -3,6 +3,7 @@ package tdl_stuff.tdl.TwoPlayer;
 import model.agents.Agent;
 import model.agents.ArtificialAgent;
 import model.agents.ExpertAI;
+import model.agents.RandomAI;
 import model.game.Game;
 import model.game.GameLogic;
 import model.game.Move;
@@ -17,6 +18,8 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Learning2P {
+
+    private Random random = new Random();
 
     private final NeuralNetwork nn;
     private final double LAMBDA;
@@ -56,7 +59,7 @@ public class Learning2P {
 //            System.out.println("Iteration: " + (i));
 //            startTime = Instant.now();
 
-            if(i % 1000 == 0) {
+            if(i % 2000 == 0) {
                 System.out.println();
                 System.out.println("Iteration: " + (i));
                 endTime = Instant.now();
@@ -64,7 +67,9 @@ public class Learning2P {
                 System.out.println("Time passed (total): " + timeElapsed + " min");
                 playTestGames();
                 try {
-                    nn.writeTo("src/tdl_stuff/models/TwoPlayer/SavedNN_2P_TDL_SP_KickStart_005_100000");
+//                    nn.writeTo("src/tdl_stuff/models/TwoPlayer/SavedNN_2P_TDL_Expert_Plus_100");
+                    nn.writeTo("src/tdl_stuff/models/TwoPlayer/SavedNN_2P_TDL_Mix_Plus_50");
+//                    nn.writeTo("src/tdl_stuff/models/TwoPlayer/SavedNN_2P_TDL_Expert_Random_Mix_Million");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -103,7 +108,7 @@ public class Learning2P {
 
     private void playTestGames() {
         int gamesWonByTDLAgent = 0;
-        for(int i = 0; i < 100; i++) {
+        for(int i = 0; i < 200; i++) {
             Game game = initGameTest();
             while (!game.isOver()) {
                 Move nextMove = getNextMove(game);
@@ -120,7 +125,7 @@ public class Learning2P {
                 gamesWonByTDLAgent++;
             }
         }
-        System.out.println("Win rate of TDL-Agent against ExpertAI: " + (gamesWonByTDLAgent / 100.0));
+        System.out.println("Win rate of TDL-Agent against ExpertAI: " + (gamesWonByTDLAgent / 200.0));
     }
 
     private Move getNextMove(Game game) {
@@ -136,8 +141,24 @@ public class Learning2P {
         shuffleArray(indices);
 
         agents[indices[0]] = new TDLAgent2P(Color.getColorById(indices[0]), game.getBoard(), nn);
+//        agents[indices[0]] = new ExpertAI(Color.getColorById(indices[0]), game.getBoard());
+
+        double rand = random.nextDouble();
+        if(rand < 0.4){
+            agents[indices[1]] = new TDLAgent2P(Color.getColorById(indices[1]), game.getBoard(), nn);
+        } else if(rand >= 0.4 && rand < 0.8){
+            agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
+        } else {
+            agents[indices[1]] = new RandomAI(Color.getColorById(indices[1]), game.getBoard());
+        }
+//        if(rand < 0.8){
+//            agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
+//        } else {
+//            agents[indices[1]] = new RandomAI(Color.getColorById(indices[1]), game.getBoard());
+//        }
+
 //        agents[indices[1]] = new TDLAgent2P(Color.getColorById(indices[1]), game.getBoard(), nn);
-        agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
+//        agents[indices[1]] = new ExpertAI(Color.getColorById(indices[1]), game.getBoard());
         agents[indices[2]] = null;
         agents[indices[3]] = null;
 
